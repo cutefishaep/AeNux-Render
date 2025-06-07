@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       compName:
-        description: "Composition Name"
+        description: "Composition for render"
         required: true
-        default: "MainComp"
+        default: "Main"
       outputName:
         description: "Output video Name"
         required: true
@@ -42,15 +42,8 @@ jobs:
           $target = "inputProject"
           $compName = "${{ github.event.inputs.compName }}"
           $outputNameRaw = "${{ github.event.inputs.outputName }}"
+          $outputName = if ($outputNameRaw -notlike "*.mp4") { "$outputNameRaw.mp4" } else { $outputNameRaw }
 
-          # Pastikan output berakhiran .mp4 (hindari double extension)
-          if ($outputNameRaw -notlike "*.mp4") {
-            $outputName = "$outputNameRaw.mp4"
-          } else {
-            $outputName = $outputNameRaw
-          }
-
-          # Cari file .aep
           $aepFile = Get-ChildItem -Path $target -Filter *.aep | Select-Object -First 1
           if (-not $aepFile) { throw "File .aep tidak ditemukan di folder $target" }
 
@@ -58,7 +51,7 @@ jobs:
           Write-Host "Composition:" $compName
           Write-Host "Output file:" "${{ github.workspace }}\$outputName"
 
-          & "C:\Program Files\Adobe\Adobe After Effects 2024\Support Files\aerender.exe" `
+          & "2024\Support Files\aerender.exe" `
             -project $aepFile.FullName `
             -comp $compName `
             -output "${{ github.workspace }}\$outputName"
