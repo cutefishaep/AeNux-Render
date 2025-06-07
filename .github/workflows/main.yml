@@ -22,10 +22,7 @@ jobs:
 
       - name: Jalankan depencies.bat (download dan ekstrak 2024.zip & plugin.zip)
         run: script\depencies.bat
-
-      - name: Jalankan installer plugin (p.bat)
-        run: plugin\p.bat
-
+        
       - name: Temukan file ZIP pertama di folder upload
         id: zipfile
         run: |
