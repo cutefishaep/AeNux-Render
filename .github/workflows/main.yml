@@ -37,14 +37,20 @@ jobs:
           New-Item -ItemType Directory -Path $target | Out-Null
           Expand-Archive -Path "${{ steps.zipfile.outputs.zipPath }}" -DestinationPath $target -Force
 
-      - name: Jalankan aerender
+      - name: Jalankan aerender (output .mp4)
         run: |
           $target = "inputProject"
           $compName = "${{ github.event.inputs.compName }}"
           $outputNameRaw = "${{ github.event.inputs.outputName }}"
-          $outputName = if ($outputNameRaw -notlike "*.mov") { "$outputNameRaw.mov" } else { $outputNameRaw }
 
-          # Cari file .aep dalam folder hasil ekstrak
+          # Pastikan output berakhiran .mp4 (hindari double extension)
+          if ($outputNameRaw -notlike "*.mp4") {
+            $outputName = "$outputNameRaw.mp4"
+          } else {
+            $outputName = $outputNameRaw
+          }
+
+          # Cari file .aep
           $aepFile = Get-ChildItem -Path $target -Filter *.aep | Select-Object -First 1
           if (-not $aepFile) { throw "File .aep tidak ditemukan di folder $target" }
 
@@ -52,7 +58,7 @@ jobs:
           Write-Host "Composition:" $compName
           Write-Host "Output file:" "${{ github.workspace }}\$outputName"
 
-          & "2024\Support Files\aerender.exe" `
+          & "C:\Program Files\Adobe\Adobe After Effects 2024\Support Files\aerender.exe" `
             -project $aepFile.FullName `
             -comp $compName `
             -output "${{ github.workspace }}\$outputName"
@@ -61,4 +67,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: render-output
-          path: "*.mov"
+          path: ${{ github.workspace }}\*.mp4
