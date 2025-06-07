@@ -1,15 +1,19 @@
-name: Run Batch Scripts
+name: AeNux Render Workflow
 
 on:
-  push:
-    paths:
-      - 'script/**'
-      - 'upload/**'
-      - '.github/workflows/run-bats.yml'
   workflow_dispatch:
+    inputs:
+      compName:
+        description: "Composition Name"
+        required: true
+        default: "MainComp"
+      outputName:
+        description: "Output video Name"
+        required: true
+        default: "output"
 
 jobs:
-  run-bat:
+  render:
     runs-on: windows-latest
 
     steps:
@@ -19,5 +23,42 @@ jobs:
       - name: Jalankan depencies.bat
         run: script\depencies.bat
 
-      - name: Jalankan checker.bat
-        run: script\checker.bat
+      - name: Temukan file ZIP pertama di folder upload
+        id: zipfile
+        run: |
+          $zip = Get-ChildItem -Path "upload" -Filter *.zip | Select-Object -First 1
+          if (-not $zip) { throw "Tidak ada file .zip di folder upload" }
+          echo "zipPath=$($zip.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Ekstrak ZIP ke folder inputProject
+        run: |
+          $target = "inputProject"
+          if (Test-Path $target) { Remove-Item -Recurse -Force $target }
+          New-Item -ItemType Directory -Path $target | Out-Null
+          Expand-Archive -Path "${{ steps.zipfile.outputs.zipPath }}" -DestinationPath $target -Force
+
+      - name: Jalankan aerender
+        run: |
+          $target = "inputProject"
+          $compName = "${{ github.event.inputs.compName }}"
+          $outputNameRaw = "${{ github.event.inputs.outputName }}"
+          $outputName = if ($outputNameRaw -notlike "*.mov") { "$outputNameRaw.mov" } else { $outputNameRaw }
+
+          # Cari file .aep dalam folder hasil ekstrak
+          $aepFile = Get-ChildItem -Path $target -Filter *.aep | Select-Object -First 1
+          if (-not $aepFile) { throw "File .aep tidak ditemukan di folder $target" }
+
+          Write-Host "Render file:" $aepFile.FullName
+          Write-Host "Composition:" $compName
+          Write-Host "Output file:" "${{ github.workspace }}\$outputName"
+
+          & "2024\Support Files\aerender.exe" `
+            -project $aepFile.FullName `
+            -comp $compName `
+            -output "${{ github.workspace }}\$outputName"
+
+      - name: Upload hasil render
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-output
+          path: "*.mov"
