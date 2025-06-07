@@ -25,7 +25,7 @@ jobs:
 
       - name: Jalankan installer plugin (p.bat)
         shell: cmd
-        run: plugin\p.bat
+        run: call plugin\p.bat
       - name: Temukan file ZIP pertama di folder upload
         id: zipfile
         run: |
