@@ -23,4 +23,13 @@ if not exist "plugin" (
 :: Ekstrak isi zip ke folder "plugin"
 powershell -Command "Expand-Archive -Path 'plugin.zip' -DestinationPath 'plugin' -Force"
 
+:: Buat folder After Effects dan MediaCore jika belum ada
+if not exist "C:\Program Files\Adobe\Adobe After Effects 2024\Support Files" (
+    mkdir "C:\Program Files\Adobe\Adobe After Effects 2024\Support Files"
+)
+
+if not exist "C:\Program Files\Adobe\Common\Plug-ins\7.0\MediaCore" (
+    mkdir "C:\Program Files\Adobe\Common\Plug-ins\7.0\MediaCore"
+)
+
 endlocal
