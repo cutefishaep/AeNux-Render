@@ -24,7 +24,7 @@ jobs:
         run: script\depencies.bat
         
       - name: Jalankan plugin installer (p.bat)
-        run: call plugin\p.bat
+        run: call script\run.bat
         shell: cmd
 
         
