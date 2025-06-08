@@ -1,8 +1,8 @@
 @echo off
 setlocal
 
-:: Mendefinisikan path ke folder installer (asumsi installer berada di folder yang sama dengan script)
-set "InstallDir=%~dp0"
+:: Ubah ke folder 'plugin' relatif terhadap lokasi p.bat
+set "InstallDir=%~dp0..\plugin\"
 
 echo Memulai instalasi aplikasi secara silent...
 echo.
