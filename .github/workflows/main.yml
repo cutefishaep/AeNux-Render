@@ -22,12 +22,11 @@ jobs:
 
       - name: Jalankan depencies.bat (download dan ekstrak 2024.zip & plugin.zip)
         run: script\depencies.bat
-        
-      - name: Jalankan plugin installer (p.bat)
+
+      - name: Jalankan plugin installer (run.bat)
         run: call script\run.bat
         shell: cmd
 
-        
       - name: Temukan file ZIP pertama di folder upload
         id: zipfile
         run: |
@@ -41,6 +40,12 @@ jobs:
           if (Test-Path $target) { Remove-Item -Recurse -Force $target }
           New-Item -ItemType Directory -Path $target | Out-Null
           Expand-Archive -Path "${{ steps.zipfile.outputs.zipPath }}" -DestinationPath $target -Force
+
+      - name: Hapus plugin.zip, 2024.zip, dan folder plugin
+        run: |
+          Remove-Item -Force -Path "plugin.zip", "2024.zip" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force -Path "plugin" -ErrorAction SilentlyContinue
+          Write-Host "File plugin.zip, 2024.zip, dan folder plugin telah dihapus."
 
       - name: Jalankan aerender (output .mp4)
         run: |
@@ -65,4 +70,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: render-output
-          path: ${{ github.workspace }}\*.mp4
+          path: ${{ github.workspace }}\*
